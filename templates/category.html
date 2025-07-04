@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category_name|title }} - WellnessWise{% endblock %}
+
+{% block content %}
+    <section class="category-page">
+        <div class="category-header">
+            <div class="category-title">
+                <img src="{{ url_for('static', filename='images/' + (category_name|lower|replace(' ', '_')) + '.png') }}" 
+                     alt="{{ category_name }}" class="category-image fallback-image">
+                <h2>{{ category_name|title }}</h2>
+            </div>
+            <p style="color: black;">Browse diseases in this category</p>
+        </div>
+        
+        <div class="disease-grid">
+            {% for disease in diseases %}
+                <a href="{{ url_for('disease', disease_name=disease.Disease|lower) }}" class="disease-card">
+                    <div class="disease-card-content">
+                        <h3>{{ disease.Disease|title }}</h3>
+                        <div class="view-button">View Details</div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

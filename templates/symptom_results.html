@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Results - WellnessWise{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="symptom-results">
+        <div class="results-header">
+            <h2><i class="fas fa-diagnoses"></i> Search Results</h2>
+        </div>
+
+        <div class="selected-symptoms">
+            <div class="symptoms-badge">
+                <i class="fas fa-stethoscope"></i>
+                <span>Selected Symptoms: {{ selected_symptoms|join(', ')|title }}</span>
+            </div>
+            <div class="symptoms-tags">
+                {% if selected_gender %}
+                    <span class="symptom-tag">Gender: {{ selected_gender|title }}</span>
+                {% endif %}
+                {% if selected_age_group %}
+                    <span class="symptom-tag">Age Group: {{ selected_age_group|title }}</span>
+                {% endif %}
+                {% if pregnancy %}
+                    <span class="symptom-tag">Pregnancy Status: {{ pregnancy|title }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2>Possible Diseases</h2>
+        {% if results %}
+            {% for result in results %}
+                <div class="disease-card">
+                    <div class="card-header">
+                        <div class="match-info">
+                            <div class="match-percentage">
+                                <div class="percentage-circle" style="--percentage: {{ result.match_percentage }}%;">
+                                    <span>{{ result.match_percentage }}%</span>
+                                </div>
+                                <span class="percentage-label">Match</span>
+                            </div>
+                        </div>
+                        <div class="disease-title">
+                            <h3>{{ result.disease.name|title }}</h3>
+                            <span class="category-badge">{{ result.disease.category|title }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="treatment-plan">
+                            <div class="plan-section">
+                                <h4>Symptoms</h4>
+                                <p>{{ result.disease.symptoms|join(', ')|title }}</p>
+                            </div>
+                            <div class="plan-section">
+                                <h4>First-Line Medication</h4>
+                                <div class="medication-card">
+                                    <p>{{ result.disease.first_line_meds }}</p>
+                                </div>
+                            </div>
+                            <div class="plan-section">
+                                <h4>Treatment Protocol</h4>
+                                <div class="protocol-card">
+                                    <p>{{ result.disease.real_world_protocol }}</p>
+                                </div>
+                            </div>
+                            <div class="plan-section">
+                                <h4>Demographic Information</h4>
+                                <div class="demographic-facts">
+                                    <p><strong>Gender:</strong> {{ result.disease.gender }}</p>
+                                    <p><strong>Age Group:</strong> {{ result.disease.age_group }}</p>
+                                    <p><strong>Pregnancy Safety:</strong> {{ result.disease.pregnancy_safety }}</p>
+                                    <p><strong>Cost Tier:</strong> {{ result.disease.cost_tier }}</p>
+                                </div>
+                            </div>
+                            <div class="plan-section">
+                                <h4>Recommendations</h4>
+                                <div class="recommendations-grid">
+                                    <div class="recommendation-card precautions">
+                                        <div class="rec-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                                        <h5>Precautions</h5>
+                                        <p>{{ result.disease.precautions }}</p>
+                                    </div>
+                                    <div class="recommendation-card diet">
+                                        <div class="rec-icon"><i class="fas fa-utensils"></i></div>
+                                        <h5>Diet</h5>
+                                        <p>{{ result.disease.diet }}</p>
+                                    </div>
+                                    <div class="recommendation-card exercise">
+                                        <div class="rec-icon"><i class="fas fa-running"></i></div>
+                                        <h5>Workout</h5>
+                                        <p>{{ result.disease.workout }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="plan-section">
+                                <h4>Comorbidities</h4>
+                                <p>{{ result.disease.comorbidities|join(', ') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('disease', disease_name=result.disease.name|lower) }}" class="view-details-btn">
+                            <i class="fas fa-info-circle"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-results-card">
+                <i class="fas fa-search-minus no-results-icon"></i>
+                <h3>No Results Found</h3>
+                <p>Try adjusting your symptoms or demographic filters.</p>
+                <a href="{{ url_for('symptom_search') }}" class="try-again-btn">
+                    <i class="fas fa-redo"></i> Try Again
+                </a>
+            </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{{ url_for('symptom_search') }}" class="try-again-btn">
+                <i class="fas fa-arrow-left"></i> Back to Symptom Search
+            </a>
+            <button id="generate-receipt" class="generate-receipt-btn">
+                <i class="fas fa-file-medical"></i> Generate Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="report-header">
+                <img src="{{ url_for('static', filename='images/wellness.png') }}" alt="WellnessWise Logo" class="report-logo">
+                <div>
+                    <h3>WellnessWise Medical Report</h3>
+                    <p class="report-date" id="report-date"></p>
+                </div>
+            </div>
+            <span class="close-modal">&times;</span>
+        </div>
+        <div class="modal-body" id="receipt-content">
+            <div class="patient-info">
+                <h4>Patient Information</h4>
+                <div class="info-grid">
+                    <div><strong>Name:</strong> {{ user.username }}</div>
+                    <div><strong>Age:</strong> {{ user.age }}</div>
+                    <div><strong>Gender:</strong> {{ user.gender|title }}</div>
+                    <div><strong>Email:</strong> {{ user.email }}</div>
+                </div>
+            </div>
+            
+            <div class="symptoms-info">
+                <h4>Reported Symptoms</h4>
+                <div class="symptoms-grid">
+                    {% for symptom in selected_symptoms %}
+                        <span class="symptom-item">{{ symptom|title }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="results-summary">
+                <h4>Diagnostic Results</h4>
+                {% for result in results %}
+                <div class="result-item">
+                    <div class="result-header">
+                        <h5>{{ result.disease.name|title }}</h5>
+                        <span class="match-badge">{{ result.match_percentage }}% match</span>
+                    </div>
+                    <div class="result-details">
+                        <p><strong>Category:</strong> {{ result.disease.category|title }}</p>
+                        <p><strong>Common Symptoms:</strong> {{ result.disease.symptoms|join(', ')|title }}</p>
+                        <p><strong>Recommended Treatment:</strong> {{ result.disease.first_line_meds }}</p>
+                        <p><strong>Treatment Protocol:</strong> {{ result.disease.real_world_protocol }}</p>
+                        <div class="recommendations">
+                            <div>
+                                <h6>Precautions:</h6>
+                                <p>{{ result.disease.precautions }}</p>
+                            </div>
+                            <div>
+                                <h6>Dietary Advice:</h6>
+                                <p>{{ result.disease.diet }}</p>
+                            </div>
+                            <div>
+                                <h6>Exercise:</h6>
+                                <p>{{ result.disease.workout }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="disclaimer">
+                <h4>Important Notice</h4>
+                <p>This report is generated based on symptom matching and should not replace professional medical advice. The information provided is for educational purposes only and is not intended as a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.</p>
+                <p class="signature">Regards, WellnessWise Health Systems</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="print-receipt" class="print-btn">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+            <button id="download-receipt" class="download-btn">
+                <i class="fas fa-download"></i> Download PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Receipt Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #4a6fa5;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .report-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .report-logo {
+        height: 60px;
+        width: auto;
+    }
+
+    .report-date {
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+
+    .close-modal {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #aaa;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .patient-info, .symptoms-info, .results-summary {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .symptoms-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .symptom-item {
+        background-color: #f0f7ff;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.9em;
+    }
+
+    .result-item {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .match-badge {
+        background-color: #4a6fa5;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 10px;
+        font-size: 0.8em;
+    }
+
+    .recommendations {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .recommendations h6 {
+        color: #4a6fa5;
+        margin-bottom: 5px;
+    }
+
+    .disclaimer {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 30px;
+    }
+
+    .signature {
+        font-style: italic;
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .print-btn, .download-btn {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9em;
+    }
+
+    .print-btn {
+        background-color: #4a6fa5;
+        color: white;
+    }
+
+    .download-btn {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .generate-receipt-btn {
+        padding: 10px 20px;
+        background-color: #4a6fa5;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1em;
+        margin-left: 15px;
+    }
+
+    .generate-receipt-btn:hover {
+        background-color: #3a5a80;
+    }
+
+    /* Print-specific styles */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #receipt-modal, #receipt-modal * {
+            visibility: visible;
+        }
+        #receipt-modal {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+        .modal-content {
+            width: 100%;
+            max-width: 100%;
+            border: none;
+            box-shadow: none;
+        }
+        .modal-footer {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate Receipt Button
+        const generateReceiptBtn = document.getElementById('generate-receipt');
+        const receiptModal = document.getElementById('receipt-modal');
+        const closeModal = document.querySelector('.close-modal');
+        const printBtn = document.getElementById('print-receipt');
+        const downloadBtn = document.getElementById('download-receipt');
+
+        // Set current date
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('report-date').textContent = now.toLocaleDateString('en-US', options);
+
+        // Open modal
+        generateReceiptBtn.addEventListener('click', function() {
+            receiptModal.style.display = 'block';
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', function() {
+            receiptModal.style.display = 'none';
+        });
+
+        // Close when clicking outside modal
+        window.addEventListener('click', function(event) {
+            if (event.target === receiptModal) {
+                receiptModal.style.display = 'none';
+            }
+        });
+
+        // Print functionality
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Download as PDF (using html2canvas)
+        downloadBtn.addEventListener('click', function() {
+            const receiptContent = document.getElementById('receipt-content');
+            
+            html2canvas(receiptContent, {
+                scale: 2,
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'WellnessWise-Report-' + new Date().toISOString().slice(0, 10) + '.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+    });
+</script>
+{% endblock %}

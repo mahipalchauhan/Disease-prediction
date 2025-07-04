@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="dashboard">
+    <div class="dashboard-header">
+        <h2>Welcome, {{ user.username }}!</h2>
+        <div class="user-info">
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ user.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Age:</span>
+                <span class="info-value">{{ user.age }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Gender:</span>
+                <span class="info-value">{{ user.gender }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Member Since:</span>
+                <span class="info-value">{{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-actions">
+        <a href="{{ url_for('symptom_search') }}" class="button primary">
+            <i class="fas fa-search-plus"></i> Check Symptoms
+        </a>
+        <a href="{{ url_for('index') }}" class="button secondary">
+            <i class="fas fa-book-medical"></i> Browse Diseases
+        </a>
+        <a href="{{ url_for('logout') }}" class="button warning">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
+
+    <div class="dashboard-sections">
+        <div class="dashboard-section recent-searches">
+            <h3><i class="fas fa-history"></i> Recent Activity</h3>
+            <div class="activity-list">
+                <p class="placeholder">Your recent searches and activities will appear here.</p>
+            </div>
+        </div>
+
+        <div class="dashboard-section quick-links">
+            <h3><i class="fas fa-link"></i> Quick Links</h3>
+            <ul>
+                <li><a href="{{ url_for('symptom_search') }}">Symptom Checker</a></li>
+                <li><a href="{{ url_for('index') }}">Disease Categories</a></li>
+                <li><a href="{{ url_for('contact') }}">Help & Support</a></li>
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

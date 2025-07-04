@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Symptom Checker - WellnessWise{% endblock %}
+
+{% block content %}
+<section class="symptom-search">
+    <div class="search-header">
+        <h2><i class="fas fa-stethoscope"></i> Symptom Checker</h2>
+        <p class="subtitle">Select your symptoms and demographic information to get personalized results</p>
+    </div>
+    
+    {% if error %}
+        <div class="error-message">{{ error }}</div>
+    {% endif %}
+    
+    <form method="POST" action="{{ url_for('symptom_search') }}" class="symptom-form" id="symptomForm">
+        <div class="demographic-section">
+            <h3 class="section-title"><i class="fas fa-user-circle"></i> About You</h3>
+            <div class="demographic-filters">
+                <div class="filter-group">
+                    <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
+                    <select name="gender" id="gender" class="filter-select">
+                        <option value="">All Genders</option>
+                        <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="age_group"><i class="fas fa-birthday-cake"></i> Age Group</label>
+                    <select name="age_group" id="age_group" class="filter-select">
+                        <option value="">All Ages</option>
+                        <option value="neonatal" {% if selected_age_group == 'neonatal' %}selected{% endif %}>Neonatal (0-1mo)</option>
+                        <option value="pediatric" {% if selected_age_group == 'pediatric' %}selected{% endif %}>Pediatric (1mo-12y)</option>
+                        <option value="teens" {% if selected_age_group == 'teens' %}selected{% endif %}>Teens (13-19)</option>
+                        <option value="adult" {% if selected_age_group == 'adult' %}selected{% endif %}>Adult (20-64)</option>
+                        <option value="elderly" {% if selected_age_group == 'elderly' %}selected{% endif %}>Elderly (65+)</option>
+                    </select>
+                </div>
+
+                <div class="filter-group pregnancy-toggle {% if selected_gender != 'female' %}hidden{% endif %}">
+                    <label for="pregnancy"><i class="fas fa-baby"></i> Pregnancy Status</label>
+                    <select name="pregnancy" id="pregnancy" class="filter-select">
+                        <option value="">Not applicable</option>
+                        <option value="pregnant" {% if pregnancy == 'pregnant' %}selected{% endif %}>Currently pregnant</option>
+                        <option value="planning" {% if pregnancy == 'planning' %}selected{% endif %}>Planning pregnancy</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="symptoms-section">
+            <h3 class="section-title"><i class="fas fa-heartbeat"></i> Your Symptoms</h3>
+            <p class="instruction">Select up to 4 symptoms you're experiencing:</p>
+            
+            <div class="symptom-boxes">
+                {% for i in range(1, 5) %}
+                <div class="symptom-box">
+                    <label for="symptom{{ i }}">{{ 'Primary' if i == 1 else 'Additional' }} Symptom</label>
+                    <select name="symptom{{ i }}" id="symptom{{ i }}" class="symptom-select" {% if i == 1 %}required{% endif %}>
+                        <option value="">Select {{ 'your most noticeable' if i == 1 else 'an additional' }} symptom...</option>
+                        {% for symptom in all_symptoms %}
+                            <option value="{{ symptom }}"
+                                {% if selected_symptoms and symptom == selected_symptoms[i-1] %}selected{% endif %}>
+                                {{ symptom|title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="search-button">
+                <i class="fas fa-search"></i> Analyze Symptoms
+            </button>
+            <button type="button" class="reset-button" id="resetButton">
+                <i class="fas fa-redo"></i> Reset Form
+            </button>
+        </div>
+    </form>
+    
+    <div class="search-tips">
+        <h4><i class="fas fa-lightbulb"></i> Tips for Best Results:</h4>
+        <ul>
+            <li>Start with your most severe symptom (e.g., "chest pain" or "fever")</li>
+            <li>Combine symptoms for more accurate results (e.g., "fatigue + weight gain")</li>
+            <li>For pediatric patients, select "Pediatric" age group for age-specific conditions</li>
+            <li>Pregnancy status will filter out unsafe medications when applicable</li>
+            <li>Changing demographics will update available symptoms</li>
+        </ul>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const genderSelect = document.getElementById('gender');
+        const pregnancyField = document.querySelector('.pregnancy-toggle');
+        
+        genderSelect.addEventListener('change', function() {
+            if (this.value === 'female') {
+                pregnancyField.classList.remove('hidden');
+            } else {
+                pregnancyField.classList.add('hidden');
+                document.getElementById('pregnancy').value = '';
+            }
+        });
+
+        document.getElementById('resetButton').addEventListener('click', function() {
+            document.getElementById('symptomForm').reset();
+            pregnancyField.classList.add('hidden');
+        });
+    });
+</script>
+{% endblock %}

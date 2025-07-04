@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Login - WellnessWise{% endblock %}
+
+{% block content %}
+
+<style>
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    
+    .password-wrapper input {
+        width: 100%;
+        padding-right: 40px;
+        box-sizing: border-box;
+    }
+    
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        user-select: none;
+    }
+    </style>
+    
+<section class="login-section">
+    <div class="login-container">
+        <h2>Login to WellnessWise</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                        <span class="close-alert">&times;</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" id="login-password" required>
+                    <span class="toggle-password" onclick="toggleLoginPassword()">👁️‍🗨️</span>
+                </div>
+                
+            </div>
+            <button type="submit" class="login-button">Log In</button>
+            <p>Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+        </form>
+    </div>
+</section>
+
+<script>
+    // Auto-dismiss alerts after 4 seconds
+    setTimeout(() => {
+        document.querySelectorAll('.alert').forEach(el => {
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500); // give time for transition
+        });
+    }, 4000);
+    
+    // Close alert manually
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('close-alert')) {
+            const alert = e.target.parentElement;
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }
+    });
+
+    function toggleLoginPassword() {
+    const passwordInput = document.getElementById('login-password');
+    const icon = document.querySelector('.toggle-password');
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.textContent = '🔐';
+    } else {
+        passwordInput.type = 'password';
+        icon.textContent = '👁️‍🗨️';
+    }
+}
+
+    </script>
+    
+{% endblock %}

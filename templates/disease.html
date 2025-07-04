@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ disease.Disease|title }} - WellnessWise{% endblock %}
+
+{% block content %}
+<section class="disease-detail">
+    <div class="disease-header">
+        <div class="image-wrapper">
+            <img src="{{ url_for('static', filename='images/' + (disease.Category|lower|replace(' ', '_')) + '.png') }}"
+                 alt="{{ disease.Disease }}" class="disease-image fallback-image">
+        </div>
+        <h2>{{ disease.Disease|title }} 
+            <span class="category-tag">{{ disease.Category|title }}</span>
+        </h2>
+    </div>
+
+    <div class="disease-content">
+        <div class="overview-section">
+            <h3>Overview</h3>
+            <div class="quick-facts">
+                <div class="fact-box">
+                    <h4>Primary Symptoms</h4>
+                    <p>{{ disease.Symptoms }}</p>
+                </div>
+                <div class="fact-box">
+                    <h4>First-Line Medications</h4>
+                    <p>{{ disease.FirstLineMeds }}</p>
+                </div>
+                <div class="fact-box">
+                    <h4>Common Comorbidities</h4>
+                    <p>{{ disease.Comorbidities|default('None listed') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="treatment-section">
+            <h3>Treatment Protocol</h3>
+            <div class="protocol-details">
+                <h4>Clinical Management</h4>
+                <div class="protocol-text">
+                    {{ disease.Protocol|replace('\n', '<br>')|safe }}
+                </div>
+            </div>
+        </div>
+
+        <div class="demographics-section">
+            <h3>Patient Demographics</h3>
+            <div class="demographic-grid">
+                <div class="demographic-item">
+                    <h4>Gender Prevalence</h4>
+                    <p>{{ disease.Gender }}</p>
+                </div>
+                <div class="demographic-item">
+                    <h4>Age Group</h4>
+                    <p>{{ disease.AgeGroup }}</p>
+                </div>
+                <div class="demographic-item">
+                    <h4>Pregnancy Safety</h4>
+                    <p>{{ disease.PregnancySafety }}</p>
+                </div>
+                <div class="demographic-item">
+                    <h4>Cost Tier</h4>
+                    <p>{{ disease.CostTier }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="lifestyle-section">
+            <h3>Lifestyle Recommendations</h3>
+            <div class="recommendations-grid">
+                <div class="recommendation-card precautions">
+                    <div class="rec-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h4>Precautions</h4>
+                    <p>{{ disease.Precautions|default('N/A') }}</p>
+                </div>
+                <div class="recommendation-card diet">
+                    <div class="rec-icon"><i class="fas fa-utensils"></i></div>
+                    <h4>Diet</h4>
+                    <p>{{ disease.Diet|default('N/A') }}</p>
+                </div>
+                <div class="recommendation-card exercise">
+                    <div class="rec-icon"><i class="fas fa-running"></i></div>
+                    <h4>Workout</h4>
+                    <p>{{ disease.Workout|default('N/A') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="comorbidities-section">
+            <h3>Common Comorbidities</h3>
+            <p>{{ disease.Comorbidities|default('None listed') }}</p>
+        </div>
+    </div>
+
+    {% if related_diseases %}
+    <div class="related-diseases">
+        <h3>Related Diseases</h3>
+        <div class="related-list">
+            {% for related in related_diseases %}
+                <a href="{{ url_for('disease', disease_name=related|lower) }}" class="related-item">
+                    {{ related|title }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

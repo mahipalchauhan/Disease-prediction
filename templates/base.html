@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellness Wise - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container1">
+            <img src="{{ url_for('static', filename='images/wellness.png') }}" class="Logo" alt="Logo">
+            <div class="logo">
+                <h1>Wellness Wise</h1>
+                <p>We care about you!!</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('symptom_search') }}">Symptom Checker</a></li>
+                    {% if 'user_id' in session %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login')}}">Login/Signup</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('developer') }}">Developer</a></li>
+                </ul>
+            </nav>
+            <div class="search-box">
+                <form action="{{ url_for('symptom_search') }}" method="get">
+                    <input type="text" name="q" placeholder="Search diseases...">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container12">
+            <div class="footer-section">
+                <h3>About Wellness Wise</h3>
+                <p>Providing comprehensive, accurate disease information for healthcare professionals and patients.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('symptom_search') }}">Symptom Checker</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('developer') }}">Developer</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: <a href="mailto:wellnesswise677@gmail.com">wellnesswise677@gmail.com</a></p>
+                <p>Phone: (123) 456-7890</p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 Wellness Wise. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <h4>Wellness Wise Assistant</h4>
+            <button class="chatbot-close">&times;</button>
+        </div>
+        <div class="chatbot-messages"></div>
+        <div class="chatbot-input">
+            <input type="text" placeholder="Ask me anything..." class="chatbot-text">
+            <button class="chatbot-send">Send</button>
+        </div>
+    </div>
+    <button class="chatbot-toggle">
+        <i class="fas fa-comment-medical"></i>
+    </button>
+    
+
+    <!-- Disease Details Section -->
+    <div id="disease-details">
+        <!-- Disease details content goes here -->
+    </div>
+</body>
+</html>
