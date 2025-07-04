@@ -1,6 +1,6 @@
 
 🩺 WellnessWise: Disease Prediction & Symptom Checker Web App
-WellnessWise is an intelligent web-based disease prediction system that allows users to:
+WellnessWise is an intelligent web-based disease prediction system using Machine Learning that allows users to:
 
 Predict diseases based on selected symptoms.
 
