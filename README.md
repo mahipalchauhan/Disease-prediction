@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 WellnessWise is an intelligent web-based disease prediction system using Machine Learning that allows users to:
 Predict diseases based on selected symptoms.
 Browse detailed disease profiles.
